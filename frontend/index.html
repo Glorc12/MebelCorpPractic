@@ -1,0 +1,748 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Furniture Company - Управление продукцией</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f5f5f5;
+            color: #333;
+        }
+
+        .container {
+            display: flex;
+            height: 100vh;
+        }
+
+        .sidebar {
+            width: 250px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            overflow-y: auto;
+            box-shadow: 2px 0 5px rgba(0,0,0,0.1);
+        }
+
+        .sidebar h1 {
+            font-size: 20px;
+            margin-bottom: 30px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .sidebar h2 {
+            font-size: 14px;
+            font-weight: 600;
+            margin-top: 25px;
+            margin-bottom: 15px;
+            text-transform: uppercase;
+            opacity: 0.8;
+        }
+
+        .sidebar button {
+            width: 100%;
+            padding: 12px 15px;
+            margin-bottom: 8px;
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            text-align: left;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+
+        .sidebar button:hover {
+            background: rgba(255,255,255,0.35);
+            transform: translateX(5px);
+        }
+
+        .sidebar button.active {
+            background: rgba(255,255,255,0.5);
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .header {
+            background: white;
+            padding: 20px;
+            border-bottom: 1px solid #e0e0e0;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+        .header h1 {
+            font-size: 28px;
+            color: #667eea;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+        }
+
+        .content-section {
+            display: none;
+        }
+
+        .content-section.active {
+            display: block;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+
+        table thead {
+            background: #667eea;
+            color: white;
+        }
+
+        table th {
+            padding: 15px;
+            text-align: left;
+            font-weight: 600;
+        }
+
+        table td {
+            padding: 12px 15px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        table tbody tr:hover {
+            background: #f9f9f9;
+        }
+
+        table tbody tr:nth-child(even) {
+            background: #fafafa;
+        }
+
+        .actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        button.delete-btn {
+            background: #dc3545;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: background 0.3s;
+        }
+
+        button.delete-btn:hover {
+            background: #c82333;
+        }
+
+        .add-btn {
+            background: #28a745;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background 0.3s;
+        }
+
+        .add-btn:hover {
+            background: #218838;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: #999;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 20px;
+            color: #667eea;
+        }
+
+        /* МОДАЛЬНОЕ ОКНО */
+        #add-modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.4);
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background-color: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+            max-width: 500px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .modal-content h2 {
+            margin-bottom: 20px;
+            color: #667eea;
+            font-size: 22px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+            font-family: inherit;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .form-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+            justify-content: flex-end;
+        }
+
+        .btn-primary {
+            background: #28a745;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: background 0.3s;
+        }
+
+        .btn-primary:hover {
+            background: #218838;
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: background 0.3s;
+        }
+
+        .btn-secondary:hover {
+            background: #5a6268;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- ЛЕВОЕ МЕНЮ -->
+        <aside class="sidebar">
+            <h1>🏭 Furniture Co.</h1>
+
+            <h2>📦 Каталог</h2>
+            <button onclick="showSection('product_types')">📊 Типы продукции</button>
+            <button onclick="showSection('material_types')">🪵 Типы материалов</button>
+
+            <h2>🏭 Производство</h2>
+            <button onclick="showSection('products')">📦 Продукты</button>
+            <button onclick="showSection('workshops')">🏗️ Цехи</button>
+            <button onclick="showSection('product_workshops')">🛣️ Маршруты</button>
+        </aside>
+
+        <!-- ГЛАВНОЕ СОДЕРЖИМОЕ -->
+        <div class="main">
+            <div class="header">
+                <h1 id="page-title">📊 Типы продукции</h1>
+            </div>
+
+            <div class="content">
+                <!-- ВКЛАДКА 1: Типы продукции -->
+                <div id="product_types" class="content-section active">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Название</th>
+                                <th>Коэффициент</th>
+                                <th>Действия</th>
+                            </tr>
+                        </thead>
+                        <tbody id="product_types_table">
+                            <tr><td colspan="4" class="loading">⏳ Загрузка данных...</td></tr>
+                        </tbody>
+                    </table>
+                    <button class="add-btn" onclick="showAddForm('product_types')">+ Добавить тип продукции</button>
+                </div>
+
+                <!-- ВКЛАДКА 2: Типы материалов -->
+                <div id="material_types" class="content-section">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Название</th>
+                                <th>% потерь</th>
+                                <th>Действия</th>
+                            </tr>
+                        </thead>
+                        <tbody id="material_types_table">
+                            <tr><td colspan="4" class="loading">⏳ Загрузка данных...</td></tr>
+                        </tbody>
+                    </table>
+                    <button class="add-btn" onclick="showAddForm('material_types')">+ Добавить тип материала</button>
+                </div>
+
+                <!-- ВКЛАДКА 3: Продукты -->
+                <div id="products" class="content-section">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Название</th>
+                                <th>Артикул</th>
+                                <th>Тип</th>
+                                <th>Материал</th>
+                                <th>Цена (₽)</th>
+                                <th>Действия</th>
+                            </tr>
+                        </thead>
+                        <tbody id="products_table">
+                            <tr><td colspan="7" class="loading">⏳ Загрузка данных...</td></tr>
+                        </tbody>
+                    </table>
+                    <button class="add-btn" onclick="showAddForm('products')">+ Добавить продукт</button>
+                </div>
+
+                <!-- ВКЛАДКА 4: Цехи -->
+                <div id="workshops" class="content-section">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Название</th>
+                                <th>Тип</th>
+                                <th>Сотрудников</th>
+                                <th>Действия</th>
+                            </tr>
+                        </thead>
+                        <tbody id="workshops_table">
+                            <tr><td colspan="5" class="loading">⏳ Загрузка данных...</td></tr>
+                        </tbody>
+                    </table>
+                    <button class="add-btn" onclick="showAddForm('workshops')">+ Добавить цех</button>
+                </div>
+
+                <!-- ВКЛАДКА 5: Маршруты -->
+                <div id="product_workshops" class="content-section">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Продукт</th>
+                                <th>Цех</th>
+                                <th>Время (ч)</th>
+                                <th>Действия</th>
+                            </tr>
+                        </thead>
+                        <tbody id="product_workshops_table">
+                            <tr><td colspan="5" class="loading">⏳ Загрузка данных...</td></tr>
+                        </tbody>
+                    </table>
+                    <button class="add-btn" onclick="showAddForm('product_workshops')">+ Добавить маршрут</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- МОДАЛЬНОЕ ОКНО ДЛЯ ДОБАВЛЕНИЯ -->
+    <div id="add-modal">
+        <div class="modal-content">
+            <div id="form-container"></div>
+        </div>
+    </div>
+
+    <script>
+        // Переключение между вкладками
+        function showSection(sectionId) {
+            document.querySelectorAll('.content-section').forEach(section => {
+                section.classList.remove('active');
+            });
+
+            document.querySelectorAll('.sidebar button').forEach(btn => {
+                btn.classList.remove('active');
+            });
+
+            document.getElementById(sectionId).classList.add('active');
+            event.target.classList.add('active');
+
+            const titles = {
+                'product_types': '📊 Типы продукции',
+                'material_types': '🪵 Типы материалов',
+                'products': '📦 Продукты',
+                'workshops': '🏗️ Цехи',
+                'product_workshops': '🛣️ Маршруты производства'
+            };
+            document.getElementById('page-title').textContent = titles[sectionId];
+
+            loadTableData(sectionId);
+        }
+
+        // Загрузить данные таблицы
+        async function loadTableData(tableName) {
+            const apiMap = {
+                'product_types': '/api/product-types',
+                'material_types': '/api/material-types',
+                'products': '/api/products',
+                'workshops': '/api/workshops',
+                'product_workshops': '/api/product-workshops'
+            };
+
+            const url = apiMap[tableName];
+            const tableId = tableName + '_table';
+
+            try {
+                const response = await fetch(url);
+                if (!response.ok) throw new Error(`Ошибка ${response.status}`);
+
+                const data = await response.json();
+                renderTable(tableName, data, tableId);
+            } catch (error) {
+                console.error('Ошибка:', error);
+                document.getElementById(tableId).innerHTML =
+                    `<tr><td colspan="5" style="text-align: center; color: #dc3545; padding: 20px;">❌ Ошибка загрузки данных</td></tr>`;
+            }
+        }
+
+        // Отрисовка таблицы
+        function renderTable(tableName, data, tableId) {
+            if (!data || data.length === 0) {
+                document.getElementById(tableId).innerHTML =
+                    `<tr><td colspan="5" class="empty-state">📭 Нет данных</td></tr>`;
+                return;
+            }
+
+            let html = '';
+
+            if (tableName === 'product_types') {
+                html = data.map(row => `
+                    <tr>
+                        <td>${row.product_type_id}</td>
+                        <td>${row.product_type_name}</td>
+                        <td>${row.coefficient}</td>
+                        <td><button class="delete-btn" onclick="deleteRow('${tableName}', ${row.product_type_id})">🗑️ Удалить</button></td>
+                    </tr>
+                `).join('');
+            } else if (tableName === 'material_types') {
+                html = data.map(row => `
+                    <tr>
+                        <td>${row.material_type_id}</td>
+                        <td>${row.material_type_name}</td>
+                        <td>${row.loss_percent}%</td>
+                        <td><button class="delete-btn" onclick="deleteRow('${tableName}', ${row.material_type_id})">🗑️ Удалить</button></td>
+                    </tr>
+                `).join('');
+            } else if (tableName === 'products') {
+                html = data.map(row => `
+                    <tr>
+                        <td>${row.product_id}</td>
+                        <td>${row.product_name}</td>
+                        <td>${row.article_number}</td>
+                        <td>${row.product_type_id}</td>
+                        <td>${row.material_type_id}</td>
+                        <td>${row.minimum_partner_price}</td>
+                        <td><button class="delete-btn" onclick="deleteRow('${tableName}', ${row.product_id})">🗑️ Удалить</button></td>
+                    </tr>
+                `).join('');
+            } else if (tableName === 'workshops') {
+                html = data.map(row => `
+                    <tr>
+                        <td>${row.workshop_id}</td>
+                        <td>${row.workshop_name}</td>
+                        <td>${row.workshop_type}</td>
+                        <td>${row.staff_count}</td>
+                        <td><button class="delete-btn" onclick="deleteRow('${tableName}', ${row.workshop_id})">🗑️ Удалить</button></td>
+                    </tr>
+                `).join('');
+            } else if (tableName === 'product_workshops') {
+                html = data.map(row => `
+                    <tr>
+                        <td>${row.product_workshop_id}</td>
+                        <td>${row.product_name}</td>
+                        <td>${row.workshop_name}</td>
+                        <td>${row.manufacturing_time_hours}</td>
+                        <td><button class="delete-btn" onclick="deleteRow('${tableName}', ${row.product_workshop_id})">🗑️ Удалить</button></td>
+                    </tr>
+                `).join('');
+            }
+
+            document.getElementById(tableId).innerHTML = html;
+        }
+
+        // Удаление записи
+        async function deleteRow(tableName, id) {
+            if (!confirm('⚠️ Вы уверены? Это действие нельзя отменить!')) return;
+
+            const apiMap = {
+                'product_types': '/api/product-types',
+                'material_types': '/api/material-types',
+                'products': '/api/products',
+                'workshops': '/api/workshops',
+                'product_workshops': '/api/product-workshops'
+            };
+
+            try {
+                const response = await fetch(`${apiMap[tableName]}/${id}`, { method: 'DELETE' });
+                if (response.ok) {
+                    alert('✅ Запись удалена!');
+                    loadTableData(tableName);
+                } else {
+                    alert('❌ Ошибка при удалении');
+                }
+            } catch (error) {
+                console.error('Ошибка:', error);
+                alert('❌ Ошибка: ' + error.message);
+            }
+        }
+
+        // Показать форму добавления
+        function showAddForm(tableName) {
+            const modal = document.getElementById('add-modal');
+            const formContainer = document.getElementById('form-container');
+
+            let formHTML = '';
+
+            if (tableName === 'product_types') {
+                formHTML = `
+                    <h2>➕ Добавить тип продукции</h2>
+                    <form onsubmit="submitForm(event, 'product_types')">
+                        <div class="form-group">
+                            <label>Название типа:</label>
+                            <input type="text" name="product_type_name" required placeholder="Например: Гостиные">
+                        </div>
+                        <div class="form-group">
+                            <label>Коэффициент:</label>
+                            <input type="number" name="product_type_coefficient" step="0.1" required placeholder="Например: 3.5">
+                        </div>
+                        <div class="form-actions">
+                            <button type="submit" class="btn-primary">✅ Добавить</button>
+                            <button type="button" class="btn-secondary" onclick="closeAddForm()">❌ Отменить</button>
+                        </div>
+                    </form>
+                `;
+            } else if (tableName === 'material_types') {
+                formHTML = `
+                    <h2>➕ Добавить тип материала</h2>
+                    <form onsubmit="submitForm(event, 'material_types')">
+                        <div class="form-group">
+                            <label>Название материала:</label>
+                            <input type="text" name="material_type_name" required placeholder="Например: Мебельный щит">
+                        </div>
+                        <div class="form-group">
+                            <label>% потерь:</label>
+                            <input type="number" name="raw_material_loss_percent" step="0.01" required placeholder="Например: 0.8">
+                        </div>
+                        <div class="form-actions">
+                            <button type="submit" class="btn-primary">✅ Добавить</button>
+                            <button type="button" class="btn-secondary" onclick="closeAddForm()">❌ Отменить</button>
+                        </div>
+                    </form>
+                `;
+            } else if (tableName === 'products') {
+                formHTML = `
+                    <h2>➕ Добавить продукт</h2>
+                    <form onsubmit="submitForm(event, 'products')">
+                        <div class="form-group">
+                            <label>Название продукта:</label>
+                            <input type="text" name="product_name" required placeholder="Комплект мебели для гостиной">
+                        </div>
+                        <div class="form-group">
+                            <label>Артикул:</label>
+                            <input type="number" name="article_number" required placeholder="1549922">
+                        </div>
+                        <div class="form-group">
+                            <label>Тип продукции (ID):</label>
+                            <input type="number" name="product_type_id" required placeholder="1">
+                        </div>
+                        <div class="form-group">
+                            <label>Тип материала (ID):</label>
+                            <input type="number" name="material_type_id" required placeholder="1">
+                        </div>
+                        <div class="form-group">
+                            <label>Минимальная цена (₽):</label>
+                            <input type="number" name="minimum_partner_price" required placeholder="160507">
+                        </div>
+                        <div class="form-actions">
+                            <button type="submit" class="btn-primary">✅ Добавить</button>
+                            <button type="button" class="btn-secondary" onclick="closeAddForm()">❌ Отменить</button>
+                        </div>
+                    </form>
+                `;
+            } else if (tableName === 'workshops') {
+                formHTML = `
+                    <h2>➕ Добавить цех</h2>
+                    <form onsubmit="submitForm(event, 'workshops')">
+                        <div class="form-group">
+                            <label>Название цеха:</label>
+                            <input type="text" name="workshop_name" required placeholder="Проектный цех">
+                        </div>
+                        <div class="form-group">
+                            <label>Тип цеха:</label>
+                            <select name="workshop_type" required>
+                                <option value="">Выбери тип...</option>
+                                <option value="Проектирование">Проектирование</option>
+                                <option value="Обработка">Обработка</option>
+                                <option value="Сушка">Сушка</option>
+                                <option value="Сборка">Сборка</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Количество сотрудников:</label>
+                            <input type="number" name="staff_count" required placeholder="4">
+                        </div>
+                        <div class="form-actions">
+                            <button type="submit" class="btn-primary">✅ Добавить</button>
+                            <button type="button" class="btn-secondary" onclick="closeAddForm()">❌ Отменить</button>
+                        </div>
+                    </form>
+                `;
+            } else if (tableName === 'product_workshops') {
+                formHTML = `
+                    <h2>➕ Добавить маршрут</h2>
+                    <form onsubmit="submitForm(event, 'product_workshops')">
+                        <div class="form-group">
+                            <label>ID продукта:</label>
+                            <input type="number" name="product_id" required placeholder="1">
+                        </div>
+                        <div class="form-group">
+                            <label>ID цеха:</label>
+                            <input type="number" name="workshop_id" required placeholder="1">
+                        </div>
+                        <div class="form-group">
+                            <label>Время производства (часы):</label>
+                            <input type="number" name="manufacturing_time_hours" step="0.1" required placeholder="1.5">
+                        </div>
+                        <div class="form-actions">
+                            <button type="submit" class="btn-primary">✅ Добавить</button>
+                            <button type="button" class="btn-secondary" onclick="closeAddForm()">❌ Отменить</button>
+                        </div>
+                    </form>
+                `;
+            }
+
+            formContainer.innerHTML = formHTML;
+            modal.style.display = 'flex';
+        }
+
+        // Закрыть форму
+        function closeAddForm() {
+            document.getElementById('add-modal').style.display = 'none';
+        }
+
+        // Отправить форму
+        async function submitForm(event, tableName) {
+            event.preventDefault();
+
+            const form = event.target;
+            const formData = new FormData(form);
+            const data = Object.fromEntries(formData);
+
+            const apiMap = {
+                'product_types': '/api/product-types',
+                'material_types': '/api/material-types',
+                'products': '/api/products',
+                'workshops': '/api/workshops',
+                'product_workshops': '/api/product-workshops'
+            };
+
+            try {
+                const response = await fetch(apiMap[tableName], {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+
+                if (response.ok) {
+                    alert('✅ Запись успешно добавлена!');
+                    closeAddForm();
+                    loadTableData(tableName);
+                } else {
+                    const error = await response.json();
+                    alert('❌ Ошибка: ' + (error.error || 'Неизвестная ошибка'));
+                }
+            } catch (error) {
+                console.error('Ошибка:', error);
+                alert('❌ Ошибка при добавлении: ' + error.message);
+            }
+        }
+
+        // Закрыть модальное окно по клику вне его
+        window.onclick = function(event) {
+            const modal = document.getElementById('add-modal');
+            if (event.target === modal) {
+                closeAddForm();
+            }
+        }
+
+        // Загрузить первую таблицу при загрузке страницы
+        document.addEventListener('DOMContentLoaded', () => {
+            loadTableData('product_types');
+        });
+    </script>
+</body>
+</html>
