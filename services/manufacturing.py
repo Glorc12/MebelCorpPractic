@@ -1,9 +1,8 @@
 """
 Модуль для расчета параметров производства
 """
+
 from models import ProductWorkshop, ProductType, MaterialType
-
-
 
 class ManufacturingService:
     """Сервис для расчета параметров производства"""
@@ -12,7 +11,6 @@ class ManufacturingService:
     def calculate_manufacturing_time(product_id: int, db_session) -> int:
         """
         Расчет времени изготовления продукции
-
         Время складывается из времени нахождения в каждом цехе.
 
         Args:
@@ -36,7 +34,7 @@ class ManufacturingService:
             total_time = sum(
                 float(pw.manufacturing_time_hours)
                 for pw in product_workshops
-            )
+            )  # ✅ ИСПРАВЛЕНО: закрыта скобка
 
             # Возвращаем целое число часов
             return int(round(total_time))
@@ -47,18 +45,16 @@ class ManufacturingService:
 
     @staticmethod
     def calculate_required_materials(
-            product_type_id: int,
-            material_type_id: int,
-            quantity: int,
-            param1: float,
-            param2: float,
-            db_session
+        product_type_id: int,
+        material_type_id: int,
+        quantity: int,
+        param1: float,
+        param2: float,
+        db_session
     ) -> int:
         """
         Расчет необходимого количества сырья с учетом потерь
-
-        Формула:
-        raw_material = quantity * (param1 * param2 * product_coefficient) * (1 + loss_percent/100)
+        Формула: raw_material = quantity * (param1 * param2 * product_coefficient) * (1 + loss_percent/100)
 
         Args:
             product_type_id: ID типа продукции

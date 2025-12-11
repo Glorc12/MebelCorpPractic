@@ -14,7 +14,7 @@ class Workshop(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
-    # ✅ ДОБАВИТЬ: обратное relationship
+    # ✅ ДОБАВЛЕНО: обратное relationship
     product_workshops = db.relationship('ProductWorkshop', back_populates='workshop', lazy='joined')
 
 
@@ -28,5 +28,6 @@ class ProductWorkshop(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
-    # ✅ ИСПРАВИТЬ: добавить back_populates и lazy
+    # ✅ ИСПРАВЛЕНО: добавлены back_populates и lazy
     workshop = db.relationship('Workshop', back_populates='product_workshops', lazy='joined')
+

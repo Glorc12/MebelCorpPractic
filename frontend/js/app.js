@@ -11,19 +11,61 @@
  * Инициализировать приложение
  */
 async function initializeApp() {
+    console.log('🚀 Инициализируем приложение...');
+
     // Загрузить данные при старте
+    await loadProductTypes();
+    await loadMaterialTypes();
     await loadProducts();
     await loadWorkshops();
-
-    // Загрузить справочники для формы
-    loadProductTypes();
-    loadMaterialTypes();
+    await loadProductWorkshops();
 
     // Установить обработчики событий
     setupEventListeners();
 
     // Показать успешную инициализацию
-    console.log('Приложение инициализировано');
+    console.log('✅ Приложение инициализировано');
+}
+
+// ============================================
+// ПЕРЕКЛЮЧЕНИЕ СТРАНИЦ
+// ============================================
+
+/**
+ * Переключить активную секцию
+ */
+function switchPage(page) {
+    console.log('📄 Переключаемся на страницу:', page);
+
+    // Скрыть все секции
+    document.querySelectorAll('.content-section').forEach(section => {
+        section.classList.remove('active');
+    });
+
+    // Показать нужную секцию
+    const targetSection = document.getElementById(page);
+    if (targetSection) {
+        targetSection.classList.add('active');
+    }
+
+    // Обновить заголовок
+    const titleMap = {
+        product_types: '📦 Типы продукции',
+        material_types: '📄 Типы материалов',
+        products: '🛍️ Продукты',
+        workshops: '🏗️ Цехи',
+        product_workshops: '🔗 Маршруты'
+    };
+
+    const titleEl = document.getElementById('page-title');
+    if (titleEl && titleMap[page]) {
+        titleEl.textContent = titleMap[page];
+    }
+
+    // Обновить кнопки в сайдбаре
+    document.querySelectorAll('.sidebar__btn').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.page === page);
+    });
 }
 
 // ============================================
@@ -34,51 +76,30 @@ async function initializeApp() {
  * Установить все обработчики событий
  */
 function setupEventListeners() {
+    console.log('🎯 Устанавливаем обработчики событий...');
+
     // Переключение страниц в сайдбаре
     document.querySelectorAll('.sidebar__btn').forEach(btn => {
         btn.addEventListener('click', (e) => {
-            const page = e.target.dataset.page;
+            e.preventDefault();
+            const page = btn.dataset.page;
+            console.log('Клик по кнопке:', page);
+
+            // Загрузить данные для текущей страницы
             if (page === 'products') {
                 loadProducts();
             } else if (page === 'workshops') {
                 loadWorkshops();
+            } else if (page === 'product_types') {
+                loadProductTypes();
+            } else if (page === 'material_types') {
+                loadMaterialTypes();
+            } else if (page === 'product_workshops') {
+                loadProductWorkshops();
             }
+
+            // Переключить страницу
             switchPage(page);
-        });
-    });
-
-    // Кнопка добавить продукт
-    document.getElementById('btn-add-product').addEventListener('click', () => {
-        showEditForm(null);
-    });
-
-    // Кнопка назад в форме редактирования
-    document.getElementById('btn-back-to-products').addEventListener('click', () => {
-        switchPage('products');
-    });
-
-    // Кнопка отмена в форме редактирования
-    document.getElementById('btn-cancel-edit').addEventListener('click', () => {
-        switchPage('products');
-    });
-
-    // Отправка формы
-    document.getElementById('form-product').addEventListener('submit', (e) => {
-        e.preventDefault();
-        submitProductForm();
-    });
-
-    // Переключение фокуса между полями для улучшения UX
-    document.querySelectorAll('.form__input').forEach(input => {
-        input.addEventListener('focus', function() {
-            // Очистить ошибку для этого поля при фокусе
-            const fieldName = this.id.replace('product-', '').replace(/-/g, '_');
-            const errorEl = document.getElementById(`error-${this.id.replace('product-', '')}`);
-            if (errorEl && errorEl.textContent) {
-                // Ошибка была, но пользователь начал редактировать — очистим
-                errorEl.textContent = '';
-                this.classList.remove('error');
-            }
         });
     });
 }

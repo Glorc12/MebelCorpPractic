@@ -52,7 +52,7 @@ def create_product_workshop():
         return jsonify({'error': str(e)}), 500
 
 
-@product_workshops_bp.route('/product-workshops/<int:id>', methods=['PUT'])
+@product_workshops_bp.route('/product-workshops/<int:id>', methods=['PUT'])  # ✅ ИСПРАВЛЕНО: добавлен <int:id>
 def update_product_workshop(id):
     """PUT /api/product-workshops/{id} - Обновить маршрут"""
     try:
@@ -73,7 +73,7 @@ def update_product_workshop(id):
         return jsonify({'error': str(e)}), 500
 
 
-@product_workshops_bp.route('/product-workshops/<int:id>', methods=['DELETE'])
+@product_workshops_bp.route('/product-workshops/<int:id>', methods=['DELETE'])  # ✅ ИСПРАВЛЕНО: добавлен <int:id>
 def delete_product_workshop(id):
     """DELETE /api/product-workshops/{id} - Удалить маршрут"""
     try:

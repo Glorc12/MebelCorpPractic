@@ -11,13 +11,14 @@ class ProductService:
         self.db = db_session
 
     def get_all_products(self):
-        """Получить все продукты"""
         products = self.db.query(Product).all()
         return [{
             'product_id': p.product_id,
             'article_number': int(p.article_number),
             'product_name': p.product_name,
+            'product_type_id': p.product_type_id,  # ✅ ДОБАВИТЬ!
             'product_type': p.product_type.product_type_name,
+            'material_type_id': p.material_type_id,  # ✅ ДОБАВИТЬ!
             'material_type': p.material_type.material_type_name,
             'minimum_partner_price': float(p.minimum_partner_price)
         } for p in products]
