@@ -20,6 +20,9 @@
             <h2>⚙️ ПРОИЗВОДСТВО</h2>
             <button class="sidebar__btn" data-page="workshops">🏗️ Цехи</button>
             <button class="sidebar__btn" data-page="product_workshops">🔗 Маршруты</button>
+
+            <h2>📐 РАСЧЁТЫ</h2>
+            <button class="sidebar__btn" data-page="raw_calc">🧮 Расчёт сырья</button>
         </aside>
 
         <!-- MAIN CONTENT -->
@@ -124,6 +127,91 @@
                     </table>
                     <button class="add-btn" onclick="showAddForm('product_workshops')">+ Добавить маршрут</button>
                 </div>
+
+                <!-- PAGE 6: RAW MATERIAL CALCULATOR -->
+                <div id="raw_calc" class="content-section">
+                    <div class="card">
+                        <div class="card__header card__header--with-actions">
+                            <div>
+                                <h2>Расчёт необходимого сырья</h2>
+                                <p class="card__subtitle">
+                                    Выберите тип продукции, материал и введите параметры партии. Система автоматически рассчитает необходимое количество сырья с учётом % потерь материала.
+                                </p>
+                            </div>
+                        </div>
+
+                        <div class="card__body">
+                            <form id="raw_calc-form" class="rawcalc-form">
+                                <div class="form-group">
+                                    <label for="rc-product">Тип продукции</label>
+                                    <select id="rc-product" class="form-control">
+                                        <option value="">-- Выберите тип продукции --</option>
+                                    </select>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="rc-material">Тип материала</label>
+                                    <select id="rc-material" class="form-control" onchange="updateMaterialLoss()">
+                                        <option value="">-- Выберите тип материала --</option>
+                                    </select>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="rc-loss">% потерь материала</label>
+                                    <input id="rc-loss" type="number" class="form-control" readonly style="background-color: #f3f4f6; cursor: not-allowed;" placeholder="Выбранный материал - - % потерь">
+                                    <small>Значение берётся автоматически из типа материала</small>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="rc-qty">Количество единиц</label>
+                                    <input id="rc-qty" type="number" min="1" step="1" placeholder="Например: 10" class="form-control">
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="rc-param1">Длина (см)</label>
+                                    <input id="rc-param1" type="number" step="0.01" placeholder="Например: 2.5" class="form-control">
+                                    <small>Вещественное число &gt; 0</small>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="rc-param2">Ширина (см)</label>
+                                    <input id="rc-param2" type="number" step="0.01" placeholder="Например: 1.5" class="form-control">
+                                    <small>Вещественное число &gt; 0</small>
+                                </div>
+
+                                <div class="form-buttons">
+                                    <button type="button" class="btn-submit" id="rc-calc-btn">Рассчитать сырьё</button>
+                                    <button type="reset" class="btn-cancel">Очистить</button>
+                                </div>
+                            </form>
+
+                            <div class="table-wrapper" style="margin-top:16px">
+                                <table>
+                                    <thead>
+                                        <tr>
+                                            <th>Тип продукции</th>
+                                            <th>Тип материала</th>
+                                            <th>Кол-во единиц</th>
+                                            <th>Длина</th>
+                                            <th>Ширина</th>
+                                            <th>Основной объём (см³)</th>
+                                            <th>% потерь</th>
+                                            <th>Итого сырья (см³)</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="raw_calc-result">
+                                        <tr class="table__loading">
+                                            <td colspan="8" style="text-align:center;padding:16px;color:#6b7280">
+                                                Результат будет показан после расчёта
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
             </div>
         </div>
     </div>
@@ -140,5 +228,7 @@
     <script src="/frontend/js/ui.js"></script>
     <script src="/frontend/js/add_form.js"></script>
     <script src="/frontend/js/app.js"></script>
+    <script src="/frontend/js/raw_calc.js"></script>
+
 </body>
 </html>
